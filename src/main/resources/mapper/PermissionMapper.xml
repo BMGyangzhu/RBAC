@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.rbac.mapper.PermissionMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.rbac.domain.Permission">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="path" column="path" jdbcType="VARCHAR"/>
+            <result property="comment" column="comment" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="listByRoleIds" resultType="org.example.rbac.domain.RolePermission">
+        SELECT *
+        FROM role_permission
+        WHERE role_id IN 
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </select>
+    
+    <delete id="deleteRolePermissionByPermissionId">
+        DELETE 
+        FROM role_permission
+        WHERE permission_id IN 
+        <foreach collection="permissionIds" item="permissionId" open="(" separator="," close=")">
+            #{permissionId}
+        </foreach>
+    </delete>
+    
+ 
+</mapper>
