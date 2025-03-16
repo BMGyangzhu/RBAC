@@ -1,4 +1,4 @@
-package org.example.rbac.config.interceptor;
+package org.example.rbac.interceptor;
 
 import cn.hutool.core.util.StrUtil;
 import com.auth0.jwt.JWT;

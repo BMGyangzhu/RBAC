@@ -1,5 +1,6 @@
 package org.example.rbac;
 
+import org.example.rbac.constant.Constants;
 import org.example.rbac.mapper.RoleMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ class RbacApplicationTests {
 
     @Test
     void contextLoads() {
-        roleMapper.listRoleUsers();
+        System.out.println(Constants.PENDING);
     }
 
 }

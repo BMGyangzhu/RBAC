@@ -2,6 +2,7 @@ package org.example.rbac.service;
 
 import org.example.rbac.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.example.rbac.domain.dto.PasswordDTO;
 import org.example.rbac.domain.dto.UserLoginDTO;
 import org.example.rbac.domain.vo.UserVO;
 
@@ -19,4 +20,7 @@ public interface UserService extends IService<User> {
     void delete(Integer id);
 
     void deleteBatch(List<Integer> userIds);
+
+    boolean changePassword(PasswordDTO passwordDTO);
+    
 }

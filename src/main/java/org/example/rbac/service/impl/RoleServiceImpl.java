@@ -57,6 +57,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
     public void saveUserRoles(Integer userId, List<Integer> roleIds) {
         roleMapper.saveUserRoles(userId, roleIds);
     }
+    
+    @Override
+    public void saveUserRole(Integer userId, Integer roleId) {
+        roleMapper.saveUserRole(userId,roleId);
+    }
 
     @Override
     public void addPermissionForAdmin(Integer permissionId){

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.example.rbac.domain.Role;
 import org.example.rbac.domain.RolePermission;
+import org.example.rbac.domain.RoleUser;
 import org.example.rbac.service.RbacService;
 import org.example.rbac.service.RoleService;
 import org.example.rbac.util.Result;
@@ -67,6 +68,18 @@ public class RoleController {
     public Result listPermissionIdsByRoleId(@PathVariable Integer roleId){
         List<Integer> permissionIds = roleService.listPermissionIdsByRoleId(roleId);
         return Result.success(permissionIds);
+    }
+    
+    @GetMapping("/verifyBusinessmenByUserId/{userId}")
+    public Result verifyBusinessmenByUserId(@PathVariable Integer userId){
+        Boolean result = rbacService.verifyBusinessmenByUserId(userId);
+        return Result.success(result);
+    }
+    
+    @GetMapping("/verifyAdministrator/{userId}")
+    public Result verifyAdministratorByUserId(@PathVariable Integer userId){
+        Boolean result = rbacService.verifyAdministrator(userId);
+        return Result.success(result);
     }
     
 }

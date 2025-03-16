@@ -24,11 +24,23 @@ const routes = [
     meta: { requiresAuth: false }, // 不需要验证的路由
   },
   {
+    path: "/person",
+    name: "Person",
+    component: () => import("@/views/Person.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
     path: "/register",
     name: "Register",
     component: () => import("@/views/Register"),
     meta: { requiresAuth: false }, // 不需要验证的路由
   },
+  {
+    path: "/password",
+    name: "Password",
+    component: () => import("@/views/Password"),
+    meta: { requiresAuth: false },
+  }
 ];
 const router = new VueRouter({
   mode: "history",

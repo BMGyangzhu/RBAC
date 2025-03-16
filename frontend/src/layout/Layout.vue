@@ -18,9 +18,7 @@
 
                 <el-main>
                     <!-- 主要内容部分 -->
-                        <KeepAlive>
                             <router-view />
-                        </KeepAlive>
                 </el-main>
             </el-container>
         </el-container>

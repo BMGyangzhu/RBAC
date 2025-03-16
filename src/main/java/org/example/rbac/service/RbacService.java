@@ -20,7 +20,11 @@ public interface RbacService  {
 
     Set<Permission> buildUserPermissionTree(Integer userId);
 
-    List<User> listUsers();
+    Boolean verifyBusinessmenByUserId(Integer userId);
+
+    Boolean verifyAdministrator(Integer userId);
+
+    List<User> listUsers(List<User> users);
 
     void AddPermissionForAdministrators(Integer id);
     
@@ -28,7 +32,9 @@ public interface RbacService  {
 
     void updateUserRoles(Integer userId, List<Integer> roleIds);
 
-    void saveUser(UserDTO userDTO);
+    boolean saveUser(UserDTO userDTO);
+
+    String register(UserDTO userDTO);
 
     void deleteRoleUserByUserId(Integer userId);
 

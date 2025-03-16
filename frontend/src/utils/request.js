@@ -9,7 +9,10 @@ const request = axios.create({
 // request拦截器
 // 统一加token，对请求参数进行统一加密
 request.interceptors.request.use(config =>{
-    config.headers['Content-Type'] = 'application/json;charset=utf-8';
+      // **如果请求是上传文件（FormData），就不修改 Content-Type**
+      if (config.headers['Content-Type'] !== 'multipart/form-data') {
+        config.headers['Content-Type'] = 'application/json;charset=utf-8';
+    }
     let user = sessionStorage.getItem("user") ? JSON.parse(sessionStorage.getItem("user")) : null;
     if (user) {
         config.headers['token'] = user.token; // 设置

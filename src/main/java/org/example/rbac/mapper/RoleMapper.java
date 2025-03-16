@@ -40,6 +40,9 @@ public interface RoleMapper extends BaseMapper<Role> {
     
     @Insert("insert into role_permission (role_id, permission_id) values (1, #{permissionId});")
     void addPermissionForAdmin(@Param("permissionId") Integer permissionId);
+
+    @Insert("insert into role_user (user_id, role_id) values (#{userId}, #{roleId})")
+    void saveUserRole(@Param("userId") Integer userId,@Param("roleId") Integer roleId);
 }
 
 

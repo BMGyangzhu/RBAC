@@ -41,7 +41,8 @@ public class RbacServiceImpl implements RbacService {
                                .one();
 
         if (user == null) {
-            throw new RuntimeException("用户名或密码错误");
+            // throw new RuntimeException("用户名或密码错误");
+            return null;
         }
 
         // 获取用户权限
@@ -163,10 +164,25 @@ public class RbacServiceImpl implements RbacService {
         return roleSet;
 
     }
+    
+    @Override
+    public Boolean verifyBusinessmenByUserId(Integer userId){
+        Set<Role> roles = getUserRoles(userId);
+        
+        return roles.stream()
+                .anyMatch(role -> "businessmen".equals(role.getName()) && "商家".equals(role.getComment()));
+    }
+    
+    @Override
+    public Boolean verifyAdministrator(Integer userId){
+        Set<Role> roles = getUserRoles(userId);
+        
+        return roles.stream()
+                .anyMatch(role -> "admin".equals(role.getName()) && "管理员".equals(role.getComment()));
+    }
 
     @Override
-    public List<User> listUsers() {
-        List<User> users = userService.list();
+    public List<User> listUsers(List<User> users) {
         Map<Integer, Set<Integer>> userIdRoleIdsMap = roleService.listRoleUsers().stream()
                                                             .collect(Collectors.groupingBy(
                                                                     RoleUser::getUserId,
@@ -216,8 +232,14 @@ public class RbacServiceImpl implements RbacService {
     }
     
     @Override
-    public void saveUser(UserDTO userDTO){
+    public boolean saveUser(UserDTO userDTO){
         User user = BeanUtil.copyProperties(userDTO, User.class, "roles");
+        
+        // 查看用户名是否已被占用
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername,user.getUsername());
+        User one = userService.getOne(queryWrapper);
+        if (one != null) return false;
         user.setPassword("123456"); // 设置默认密码
         userService.save(user);
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -226,6 +248,32 @@ public class RbacServiceImpl implements RbacService {
         List<Integer> roleIds = userDTO.getRoles();
 
         roleService.saveUserRoles(userId,roleIds);
+        return true;
+    }
+    
+    @Override
+    public String register(UserDTO userDTO) {
+        String username = userDTO.getUsername();
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<User> eq = userLambdaQueryWrapper.eq(User::getUsername, username);
+        User one = userService.getOne(eq);
+        if (one != null) {
+            return "该用户已被占用";
+        }
+        User user = BeanUtil.copyProperties(userDTO, User.class, "roles");
+        user.setNickname("user");
+        userService.save(user);
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getUsername, userDTO.getUsername());
+        Integer userId = userService.getOne(lambdaQueryWrapper).getId();
+
+        LambdaQueryWrapper<Role> roleLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roleLambdaQueryWrapper.eq(Role::getComment, "普通用户");
+        Role role = roleService.getOne(roleLambdaQueryWrapper);
+        Integer roleId = role.getId();
+        roleService.saveUserRole(userId, roleId);
+        
+        return "注册成功";
     }
     
     

@@ -1,6 +1,6 @@
 package org.example.rbac.config;
 
-import org.example.rbac.config.interceptor.JwtInterceptor;
+import org.example.rbac.interceptor.JwtInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

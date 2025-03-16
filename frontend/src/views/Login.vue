@@ -3,16 +3,20 @@
         <div
             style="margin: 200px auto; background-color: #fff; width: 350px; height: 300px; padding: 20px; border-radius: 10px;">
             <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>登录</b></div>
-            <el-form :model="user" :rules="rules" ref="userForm">
+            <el-form :model="user" :rules="rules" ref="userForm" >
                 <el-form-item prop="username">
                     <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user"
-                        v-model="user.username"></el-input>
+                        v-model="user.username"
+                        placeholder="请输入用户名"
+                        ></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
                     <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-lock" show-password
-                        v-model="user.password"></el-input>
+                        v-model="user.password"
+                        @keyup.enter.native="login"
+                        placeholder="请输入密码"></el-input>
                 </el-form-item>
-                <el-button type="primary" size="small" autocomplete="off" @click="login">登录</el-button>
+                <el-button type="primary" size="small" autocomplete="off" @click="login" html-type="submit" >登录</el-button>
                 <el-button type="warning" size="small" autocomplete="off"
                     @click="$router.push('/register')">注册</el-button>
             </el-form>
@@ -85,7 +89,7 @@ export default {
 
                     } else {
                         this.$message({
-                            type: 'error',
+                            type: 'info',
                             message: res.msg
                         })
                     }

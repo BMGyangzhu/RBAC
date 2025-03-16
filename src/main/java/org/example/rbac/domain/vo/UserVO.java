@@ -13,6 +13,7 @@ import java.util.Set;
 @Data
 public class UserVO {
 
+    private Integer id;
     private String username;
     private String nickname;
     private String token;

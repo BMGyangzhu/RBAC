@@ -3,22 +3,33 @@ package org.example.rbac.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.example.rbac.constant.Constants;
+import org.example.rbac.domain.Role;
+import org.example.rbac.domain.RoleUser;
 import org.example.rbac.domain.User;
+import org.example.rbac.domain.dto.BaseUserDTO;
+import org.example.rbac.domain.dto.PasswordDTO;
 import org.example.rbac.domain.dto.UserDTO;
 import org.example.rbac.domain.dto.UserLoginDTO;
 import org.example.rbac.domain.vo.UserVO;
 import org.example.rbac.service.RbacService;
+import org.example.rbac.service.RoleService;
 import org.example.rbac.service.UserService;
 import org.example.rbac.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author bgmyangzhu
@@ -35,6 +46,9 @@ public class UserController {
     
     @Autowired
     UserService userService;
+    
+    @Autowired
+    RoleService roleService;
 
     private boolean validateUserDTO(UserLoginDTO userLoginDTO) {
         return StrUtil.isNotBlank(userLoginDTO.getUsername()) && StrUtil.isNotBlank(userLoginDTO.getPassword());
@@ -46,19 +60,21 @@ public class UserController {
             return Result.error(Constants.CODE_400, "用户名或密码不能为空");
         }
         UserVO user = rbacService.login(userLoginDTO);
+        if (user == null) return Result.error("401","账号或密码错误");
         return Result.success(user);
     }
-    @GetMapping
-    public Result findAll(){
-        List<User> list = rbacService.listUsers();
-        return Result.success(list);
-    }
+//    @GetMapping
+//    public Result findAll(){
+//        List<User> list = rbacService.listUsers();
+//        return Result.success(list);
+//    }
 
     @PostMapping
     @Transactional
     public Result save(@RequestBody UserDTO userDTO) {
         // 新增或者更新
         User user = BeanUtil.copyProperties(userDTO, User.class, "roles");
+        rbacService.deleteRoleUserByUserId(userDTO.getId());
         rbacService.updateUserRoles(userDTO.getId(), userDTO.getRoles());
         userService.saveOrUpdate(user);
         return Result.success();
@@ -77,11 +93,14 @@ public class UserController {
          return Result.success();
     }
     
+   
+    
     @PostMapping("/add")
     @Transactional
     public Result addUser(@RequestBody UserDTO userDTO){
-        rbacService.saveUser(userDTO);
-        return Result.success();
+        boolean result = rbacService.saveUser(userDTO);
+        if (result) return Result.success();
+        return Result.error("400","该用户名已存在");
     }
     
     
@@ -104,7 +123,8 @@ public class UserController {
         }
         lambdaQueryWrapper.orderByAsc(User::getId);
         IPage<User> iPage = userService.page(page, lambdaQueryWrapper);
-        List<User> users = rbacService.listUsers();
+        List<User> records = iPage.getRecords();
+        List<User> users = rbacService.listUsers(records);
         iPage.setRecords(users);
         return Result.success(iPage);
     }
@@ -118,15 +138,46 @@ public class UserController {
         if (StrUtil.isBlank(username) || StrUtil.isBlank(password)) {
             return Result.error(Constants.CODE_400, "参数错误");
         }
-        return Result.success(userService.register(userLoginDTO));
+        UserDTO userDTO = BeanUtil.copyProperties(userLoginDTO, UserDTO.class);
+        String result = rbacService.register(userDTO);
+        if (Objects.equals(result, "注册成功")) return Result.success();
+        
+        return Result.error("400","该账号已被占用");
     }
 
-    @GetMapping("/user/{username}")
+    @GetMapping("/{username}")
     public Result findByUsername(@PathVariable String username) {
         LambdaQueryWrapper<User> lambdaQueryWrapper = Wrappers.lambdaQuery(User.class);
         lambdaQueryWrapper.eq(User::getUsername,username);
-        return Result.success(userService.getOne(lambdaQueryWrapper));
+        User one = userService.getOne(lambdaQueryWrapper);
+        Integer userId = one.getId();
+        List<RoleUser> roleUsers = roleService.listByUserId(userId);
+        Set<Integer> roleIds = roleUsers.stream().map(RoleUser::getRoleId).collect(Collectors.toSet());
+        List<Role> roles = roleService.listByIds(roleIds);
+        Set<Role> roleSet = new HashSet<>(roles);
+        one.setRoles(roleSet);
+        return Result.success(one);
     }
+
+    @PostMapping("/password")
+    public Result changePassword(@RequestBody PasswordDTO passwordDTO) {
+        boolean result = userService.changePassword(passwordDTO);
+        return result ? Result.success() : Result.error("400","修改失败");
+    }
+    
+    @PostMapping("/person")
+    public Result modifyPersonInfo(@RequestBody BaseUserDTO baseUserDTO) {
+        User user = BeanUtil.copyProperties(baseUserDTO, User.class);
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getUsername,user.getUsername())
+                .set(User::getNickname,user.getNickname())
+                .set(User::getEmail,user.getEmail())
+                .set(User::getAddress,user.getAddress());
+        boolean result = userService.update(updateWrapper);
+        if (result) return Result.success();
+        return Result.error("400","修改个人信息失败");
+    }
+
 
 
 }

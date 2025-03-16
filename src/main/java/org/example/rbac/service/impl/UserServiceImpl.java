@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.example.rbac.constant.Constants;
 import org.example.rbac.domain.Permission;
 import org.example.rbac.domain.User;
+import org.example.rbac.domain.dto.PasswordDTO;
 import org.example.rbac.domain.dto.UserLoginDTO;
 import org.example.rbac.exception.ServiceException;
 import org.example.rbac.service.UserService;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static org.checkerframework.checker.units.qual.Prefix.one;
 
 /**
  * @author bgmyangzhu
@@ -28,9 +31,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 
     private static final Log LOG = Log.get();
-    
+
     @Autowired
     UserMapper userMapper;
+
+    @Override
+    public boolean changePassword(PasswordDTO passwordDTO) {
+        String username = passwordDTO.getUsername();
+        String oldPassword = passwordDTO.getOldPassword();
+        String newPassword = passwordDTO.getNewPassword();
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getUsername, username)
+                     .eq(User::getPassword, oldPassword)
+                     .set(User::getPassword, newPassword);
+        boolean result = update(updateWrapper);
+        return result;
+    }
 
     @Override
     public User register(UserLoginDTO userLoginDTO) {
@@ -59,14 +75,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public void delete(Integer id) {
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(User::getDeleted, 0)
-                     .set(User::getDeletedTime, System.currentTimeMillis());
-        User user = getById(id);
-        update(user,updateWrapper);
+        updateWrapper
+                .eq(User::getId, id)
+                .set(User::getDeleted, 1)
+                .set(User::getDeletedTime, System.currentTimeMillis());
+        update(updateWrapper);
     }
-    
+
     @Override
-    public void deleteBatch(List<Integer> userIds){
+    public void deleteBatch(List<Integer> userIds) {
         // 设置删除时间戳
         List<User> users = listByIds(userIds);
         users.forEach(permission -> {

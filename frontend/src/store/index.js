@@ -1,17 +1,26 @@
-// import Vue from 'vue'
-// import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-// Vue.use(Vuex)
+Vue.use(Vuex);
 
-// const store = new Vuex.Store({
-//     state: {
-//         currentPathName: ''
-//     },
-//     mutations: {
-//         setPath (state){
-//             state.currentPathName = localStorage.getItem("currentPathName")
-//         }
-//     }
-// })
-
-// export default store
+export default new Vuex.Store({
+    state: {
+        isApplicationRejected: false,
+    },
+    mutations: {
+        setApplicationRejected(state, status){
+            state.isApplicationRejected = status;
+        }
+    },
+    actions: {
+        updateApplicationStatus({ commit }, status){
+            commit('setApplicationRejected', status);
+        }
+    },
+    getters: {
+        isApplicationRejected: (state) =>{
+            console.log('isApplicationRejected getter:', state.isApplicationRejected);
+            return state.isApplicationRejected;
+        }
+    }
+})

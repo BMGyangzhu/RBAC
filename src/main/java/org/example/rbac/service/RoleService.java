@@ -24,6 +24,8 @@ public interface RoleService extends IService<Role> {
 
     void saveRolePermission(Integer roleId, List<Integer> permissionIds);
 
+    void saveUserRole(Integer userId, Integer roleId);
+
     void addPermissionForAdmin(Integer permissionId);
 
     void deleteRoleUserByUserId(Integer userId);
